@@ -3,6 +3,6 @@
     <string name="title_activity_maps">WeatherApp</string>
 
     <string name="main_screen_city">Nearest city: %1$s</string>
-    <string name="main_screen_temp">Temperature is %1$f °K</string>
+    <string name="main_screen_temp">Temperature is %1$.1f °C</string>
     <string name="main_screen_weather">it\'s %1$s</string>
 </resources>

@@ -64,7 +64,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
 
         disposer = locationSubject
-            .sample(10, TimeUnit.SECONDS)
+            .sample(20, TimeUnit.SECONDS)
             .subscribe(::updateLocation)
 
         disposer = locationSubject

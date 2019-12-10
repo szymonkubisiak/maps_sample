@@ -9,6 +9,14 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 
+fun createOWMService(): OWMService? {
+    val retrofit = createRetrofit()
+    val retval = retrofit.create<OWMService>(OWMService::class.java)
+    return retval
+}
+
+/*
+//TEST:
 interface OWMService {
     @GET("weather")
     fun getWeather(
@@ -19,13 +27,7 @@ interface OWMService {
     ): Single<WeatherResponse>
 }
 
-fun createOWMService(): OWMService? {
-    val retrofit = createRetrofit()
-    val retval = retrofit.create<OWMService>(OWMService::class.java)
-    return retval
-}
-
-fun createRetrofit(): Retrofit {
+private fun createRetrofit(): Retrofit {
     val retval = Retrofit.Builder()
         .baseUrl("https://samples.openweathermap.org/data/2.5/")
         .addConverterFactory(GsonConverterFactory.create())
@@ -35,9 +37,31 @@ fun createRetrofit(): Retrofit {
 
     return retval
 }
+*/
 
+//PROD:
+interface OWMService {
+    @GET("weather")
+    fun getWeather(
+        @Query("lat") lat: Double
+        , @Query("lon") lon: Double
+        , @Query("appid") appid: String = "d4b9386285fd3aecccdf264ae43df1c6"
+        , @Query("units") units: String? = "metric"
+    ): Single<WeatherResponse>
+}
 
-fun createOkHttpClient(): OkHttpClient {
+private fun createRetrofit(): Retrofit {
+    val retval = Retrofit.Builder()
+        .baseUrl("https://api.openweathermap.org/data/2.5/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+        .client(createOkHttpClient())
+        .build()
+
+    return retval
+}
+
+private fun createOkHttpClient(): OkHttpClient {
     val httpClient = OkHttpClient.Builder()
 //    httpClient.addInterceptor { chain ->
 //        val original = chain.request()
