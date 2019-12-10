@@ -3,8 +3,10 @@ package pl.kubisiak.gmaps
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -15,15 +17,33 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
+import io.reactivex.functions.Consumer
+import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_maps.*
+import pl.kubisiak.gmaps.owm.OWMService
+import pl.kubisiak.gmaps.owm.createOWMService
 import pl.kubisiak.gmaps.persistence.MyDataBase
+import java.lang.Exception
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 private const val PERMISSIONS_REQUEST_CODE = 11
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
+    private val owmService: OWMService by lazy { createOWMService()!! }
+    private val locationSubject = BehaviorSubject.create<Location>()
+
+    override fun onDestroy() {
+        super.onDestroy()
+        theRealDisposer.dispose()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,17 +53,47 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         savePosition.setOnClickListener {
-            //mMap.curre
-            val xx = LatLng(0.0, 0.0)
-            MyDataBase.getDatabase(this).courseAndNameModel().addData( SavedPosition(xx, Date(), null))
+            locationSubject.value?.also {
+                val xx = LatLng(it.latitude, it.longitude)
+                disposer = Completable.create {
+                        MyDataBase.getDatabase(this).courseAndNameModel().addData(SavedPosition(xx, Date(), null))
+                    }
+                    .subscribeOn(Schedulers.io())
+                    .subscribe()
+            }
         }
+
+        disposer = locationSubject
+            .sample(10, TimeUnit.SECONDS)
+            .subscribe(::updateLocation)
+
+        disposer = locationSubject
+            .take(1)
+            .subscribe(::updateLocation)
     }
+
+    private fun updateLocation(it: Location){
+        disposer = owmService.getWeather(it.latitude, it.longitude)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(Consumer {
+                cityName.text = getString(R.string.main_screen_city, it.name)
+                temperature.text = getString(R.string.main_screen_temp, it.main?.temp)
+                weather.text = getString(R.string.main_screen_weather, it.weather?.firstOrNull()?.description)
+            })
+    }
+
+    private val theRealDisposer = CompositeDisposable()
+    private var disposer: Disposable
+        get() = throw Exception("WTF")
+        set(value) {
+            theRealDisposer.add(value)
+        }
 
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
+     * This is where we can add markers or lines, add listeners or move the camera.
      * If Google Play services is not installed on the device, the user will be prompted to install
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
@@ -57,9 +107,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             requestPermissions()
         }
         // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        val modlin = LatLng(52.45, 20.65)
+        mMap.addMarker(MarkerOptions().position(modlin).title("Lotnisko w Modlinie"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(modlin))
+        mMap.setOnMyLocationChangeListener {
+            locationSubject.onNext(it)
+        }
     }
 
     private fun checkPermissions(ctx: Context): Boolean {
@@ -87,8 +140,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun whenLocationAllowed() {
-        mMap.setMyLocationEnabled(true)
-        mMap.getUiSettings().setMyLocationButtonEnabled(true)
+        mMap.isMyLocationEnabled = true
+        mMap.uiSettings.isMyLocationButtonEnabled = true
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {

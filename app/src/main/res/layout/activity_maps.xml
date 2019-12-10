@@ -19,8 +19,29 @@
         android:layout_height="0dp"
         android:layout_width="match_parent"
         android:layout_weight="2"
+        android:orientation="vertical"
         android:background="@android:color/background_light"
         >
+
+
+        <TextView
+            android:id="@+id/cityName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
+        <TextView
+            android:id="@+id/weather"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TextView" />
+
         <Button
             android:id="@+id/savePosition"
             android:layout_width="wrap_content"
