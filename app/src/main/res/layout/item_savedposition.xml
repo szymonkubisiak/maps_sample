@@ -22,7 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="28sp"
-            android:text="@{String.format(@string/saved_item_temp, vm.position.city, vm.position.temperature)}"
+            android:text="@{String.format(@string/saved_item_city_and_temp, vm.position.city, vm.position.temperature)}"
             tools:text="Lorem ipsum"
             />
         <TextView

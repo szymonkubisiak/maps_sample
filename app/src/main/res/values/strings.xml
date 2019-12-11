@@ -6,5 +6,7 @@
     <string name="main_screen_temp">Temperature is %1$.1f °C</string>
     <string name="main_screen_weather">it\'s %1$s</string>
 
-    <string name="saved_item_temp">%1$s , %2$.1f °C</string>
+    <string name="saved_item_city_and_temp">%1$s , %2$.1f °C</string>
+
+    <string name="saved_item_temp_and_date">%1$.1f °C, %2$s</string>
 </resources>

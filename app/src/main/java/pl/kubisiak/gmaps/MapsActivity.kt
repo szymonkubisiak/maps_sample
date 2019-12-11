@@ -115,13 +115,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap = googleMap
 
         if(checkPermissions(this)) {
-            whenLocationAllowed()
+            enterLocationTrackingMode()
         } else {
             requestPermissions()
         }
         // Add a marker in Sydney and move the camera
         val modlin = LatLng(52.45, 20.65)
-        mMap.addMarker(MarkerOptions().position(modlin).title("Lotnisko w Modlinie"))
+        //mMap.addMarker(MarkerOptions().position(modlin).title("Lotnisko w Modlinie"))
         mMap.moveCamera(CameraUpdateFactory.newLatLng(modlin))
         mMap.setOnMyLocationChangeListener {
             locationSubject.onNext(it)
@@ -146,32 +146,55 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             if (length > 0) {
                 val grantResult = grantResults[0]
                 if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                    whenLocationAllowed()
+                    enterLocationTrackingMode()
                 }
             }
         }
     }
 
-    private fun whenLocationAllowed() {
+    private fun enterLocationTrackingMode() {
+        mMap.clear()
         mMap.isMyLocationEnabled = true
         mMap.uiSettings.isMyLocationButtonEnabled = true
+    }
+
+    private fun enterLocationDisplayMode(arg: SavedPosition) {
+        mMap.isMyLocationEnabled = false
+        mMap.uiSettings.isMyLocationButtonEnabled = false
+
+        val coords = arg.position
+        mMap.clear()
+        mMap.addMarker(MarkerOptions()
+            .position(coords)
+            .title(arg.city)
+            .snippet(
+                getString(R.string.saved_item_temp_and_date, arg.temperature, arg.date.toString())
+            )
+        )
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(coords))
     }
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == SAVEDLOCATION_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            val date = data.getSerializableExtra("date") as Date?
+        if (requestCode == SAVEDLOCATION_REQUEST_CODE)
+            if (resultCode == RESULT_OK && data != null) {
+                val date = data.getSerializableExtra("date") as Date?
 
-            date?.also {
-                disposer = MyDataBase.getDatabase(this)
-                    .courseAndNameModel()
-                    .getItem(it)
-                    .subscribe {
-                        Log.d("db", "got item " + it.city)
-                    }
+                date?.also { key ->
+                    disposer = MyDataBase.getDatabase(this)
+                        .courseAndNameModel()
+                        .getItem(key)
+                        .take(1)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe {
+                            Log.d("db", "got item " + it.city)
+                            enterLocationDisplayMode(it)
+                        }
+                }
+            } else {
+                enterLocationTrackingMode()
             }
-        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
@@ -181,12 +204,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             startActivityForResult(intent, SAVEDLOCATION_REQUEST_CODE)
             true
         }
-
-        R.id.action_favorite -> {
-            // User chose the "Favorite" action, mark the current item
-            // as a favorite...
-            true
-        }
+//
+//        R.id.action_favorite -> {
+//            // User chose the "Favorite" action, mark the current item
+//            // as a favorite...
+//            true
+//        }
 
         else -> {
             // If we got here, the user's action was not recognized.
