@@ -2,6 +2,7 @@ package pl.kubisiak.gmaps
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
@@ -25,6 +26,7 @@ import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_maps.*
+import pl.kubisiak.gmaps.locationslist.SavedLocationsListActivity
 import pl.kubisiak.gmaps.owm.OWMService
 import pl.kubisiak.gmaps.owm.WeatherResponse
 import pl.kubisiak.gmaps.owm.createOWMService
@@ -35,6 +37,7 @@ import java.util.concurrent.TimeUnit
 
 
 private const val PERMISSIONS_REQUEST_CODE = 11
+private const val SAVEDLOCATION_REQUEST_CODE = 12
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mMap: GoogleMap
@@ -53,21 +56,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
-        disposer = MyDataBase.getDatabase(this)
-            .courseAndNameModel()
-            .getItems()
-            ?.subscribe{
-                Log.d("db", "got items")
-            }
 
         savePosition.setOnClickListener {
             lastWeatherResponse?.also {
                 val lat = it.coord?.lat
                 val lon = it.coord?.lon
+                val name = it.name
                 val temp = it.main?.temp
-                if (lat != null && lon != null && temp != null) {
+                if (lat != null && lon != null && name != null && temp != null) {
                     disposer = Completable.create { _ ->
-                        MyDataBase.getDatabase(this).courseAndNameModel().addData(SavedPosition(lat, lon, Date(), temp))
+                        MyDataBase.getDatabase(this).courseAndNameModel().addData(SavedPosition(lat, lon, Date(), name, temp))
                     }
                         .subscribeOn(Schedulers.io())
                         .subscribe()
@@ -159,9 +157,28 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         mMap.uiSettings.isMyLocationButtonEnabled = true
     }
 
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SAVEDLOCATION_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            val date = data.getSerializableExtra("date") as Date?
+
+            date?.also {
+                disposer = MyDataBase.getDatabase(this)
+                    .courseAndNameModel()
+                    .getItem(it)
+                    .subscribe {
+                        Log.d("db", "got item " + it.city)
+                    }
+            }
+        }
+    }
+
     override fun onOptionsItemSelected(item: MenuItem) = when (item.itemId) {
-        R.id.action_settings -> {
+        R.id.action_saved_locations -> {
             // User chose the "Settings" item, show the app settings UI...
+            val intent = Intent(this, SavedLocationsListActivity::class.java)
+            startActivityForResult(intent, SAVEDLOCATION_REQUEST_CODE)
             true
         }
 

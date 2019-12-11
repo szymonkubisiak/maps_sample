@@ -14,7 +14,8 @@ data class SavedPosition(
     val longitude: Double,
     @PrimaryKey
     val date: Date,
-    val temperature: Double? ) : Parcelable {
+    val city: String,
+    val temperature: Double ) : Parcelable {
 
     val position: LatLng
         get() = LatLng(latitude, longitude)

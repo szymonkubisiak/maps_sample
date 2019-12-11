@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/tools"
+    >
+    <data>
+        <variable
+            name="vm"
+            type="pl.kubisiak.gmaps.locationslist.SavedLocationsListViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.main.MainFragment">
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/testList"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="#FFCC00"
+                android:dividerHeight="2dp"
+                bind:items="@{vm.list}"
+                bind:vertical="@{true}"
+                />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

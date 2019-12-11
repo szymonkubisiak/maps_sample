@@ -5,4 +5,6 @@
     <string name="main_screen_city">Nearest city: %1$s</string>
     <string name="main_screen_temp">Temperature is %1$.1f °C</string>
     <string name="main_screen_weather">it\'s %1$s</string>
+
+    <string name="saved_item_temp">%1$s , %2$.1f °C</string>
 </resources>
