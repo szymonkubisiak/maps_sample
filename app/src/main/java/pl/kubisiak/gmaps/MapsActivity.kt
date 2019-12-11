@@ -26,6 +26,7 @@ import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.android.synthetic.main.activity_maps.*
 import pl.kubisiak.gmaps.owm.OWMService
+import pl.kubisiak.gmaps.owm.WeatherResponse
 import pl.kubisiak.gmaps.owm.createOWMService
 import pl.kubisiak.gmaps.persistence.MyDataBase
 import java.lang.Exception
@@ -52,14 +53,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        disposer = MyDataBase.getDatabase(this)
+            .courseAndNameModel()
+            .getItems()
+            ?.subscribe{
+                Log.d("db", "got items")
+            }
+
         savePosition.setOnClickListener {
-            locationSubject.value?.also {
-                val xx = LatLng(it.latitude, it.longitude)
-                disposer = Completable.create {
-                        MyDataBase.getDatabase(this).courseAndNameModel().addData(SavedPosition(xx, Date(), null))
+            lastWeatherResponse?.also {
+                val lat = it.coord?.lat
+                val lon = it.coord?.lon
+                val temp = it.main?.temp
+                if (lat != null && lon != null && temp != null) {
+                    disposer = Completable.create { _ ->
+                        MyDataBase.getDatabase(this).courseAndNameModel().addData(SavedPosition(lat, lon, Date(), temp))
                     }
-                    .subscribeOn(Schedulers.io())
-                    .subscribe()
+                        .subscribeOn(Schedulers.io())
+                        .subscribe()
+                }
             }
         }
 
@@ -77,17 +89,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(Consumer {
+                lastWeatherResponse = it
                 cityName.text = getString(R.string.main_screen_city, it.name)
                 temperature.text = getString(R.string.main_screen_temp, it.main?.temp)
                 weather.text = getString(R.string.main_screen_weather, it.weather?.firstOrNull()?.description)
             })
     }
 
+    private var lastWeatherResponse: WeatherResponse? = null
+
     private val theRealDisposer = CompositeDisposable()
-    private var disposer: Disposable
+    private var disposer: Disposable?
         get() = throw Exception("WTF")
         set(value) {
-            theRealDisposer.add(value)
+            value?.also { theRealDisposer.add(it) }
         }
 
     /**
