@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -32,6 +33,7 @@ import pl.kubisiak.gmaps.owm.WeatherResponse
 import pl.kubisiak.gmaps.owm.createOWMService
 import pl.kubisiak.gmaps.persistence.MyDataBase
 import java.lang.Exception
+import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -83,6 +85,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun updateLocation(it: Location){
+        if(isDisplayMode) {
+            return
+        }
         disposer = owmService.getWeather(it.latitude, it.longitude)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -152,13 +157,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    override fun onBackPressed() {
+        if(isDisplayMode) {
+            enterLocationTrackingMode()
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    private var isDisplayMode = false
     private fun enterLocationTrackingMode() {
+        trackingModeGroup.visibility = View.VISIBLE
+        displayModeGroup.visibility = View.GONE
+        isDisplayMode = false
         mMap.clear()
         mMap.isMyLocationEnabled = true
         mMap.uiSettings.isMyLocationButtonEnabled = true
     }
 
     private fun enterLocationDisplayMode(arg: SavedPosition) {
+        trackingModeGroup.visibility = View.GONE
+        displayModeGroup.visibility = View.VISIBLE
+
+        savedCityName.text = getString(R.string.main_screen_saved_city, arg.city)
+        savedTemperature.text = getString(R.string.main_screen_saved_temp, arg.temperature)
+        savedDate.text = getString(R.string.main_screen_saved_date, Utils.formatDate(arg.date))
+
+        isDisplayMode = true
         mMap.isMyLocationEnabled = false
         mMap.uiSettings.isMyLocationButtonEnabled = false
 
@@ -168,7 +193,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             .position(coords)
             .title(arg.city)
             .snippet(
-                getString(R.string.saved_item_temp_and_date, arg.temperature, arg.date.toString())
+                getString(R.string.saved_item_temp_and_date, arg.temperature, Utils.formatDate(arg.date))
             )
         )
         mMap.moveCamera(CameraUpdateFactory.newLatLng(coords))
@@ -222,4 +247,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         menuInflater.inflate(R.menu.map_menu, menu)
         return true
     }
+
+
 }

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">gmapy Szymona</string>
     <string name="title_activity_maps">WeatherApp</string>
+    <string name="title_activity_locations">Weather\'s history</string>
 
     <string name="main_screen_city">Nearest city: %1$s</string>
     <string name="main_screen_temp">Temperature is %1$.1f °C</string>
@@ -9,4 +10,12 @@
     <string name="saved_item_city_and_temp">%1$s , %2$.1f °C</string>
 
     <string name="saved_item_temp_and_date">%1$.1f °C, %2$s</string>
+    <string name="save_position">save position</string>
+    <string name="your_saved_location">Your saved location:</string>
+
+
+    <string name="main_screen_saved_city">Place: %1$s</string>
+    <string name="main_screen_saved_temp">Temperature was %1$.1f °C</string>
+    <string name="main_screen_saved_date">Saved on: %1$s</string>
+
 </resources>

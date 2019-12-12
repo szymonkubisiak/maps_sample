@@ -23,31 +23,73 @@
         android:background="@android:color/background_light"
         >
 
+        <LinearLayout
+            android:id="@+id/trackingModeGroup"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:visibility="visible"
+            >
 
-        <TextView
-            android:id="@+id/cityName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
+            <TextView
+                android:id="@+id/cityName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="cityName" />
 
-        <TextView
-            android:id="@+id/temperature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
+            <TextView
+                android:id="@+id/temperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="temperature" />
 
-        <TextView
-            android:id="@+id/weather"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
+            <TextView
+                android:id="@+id/weather"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="weather" />
 
-        <Button
-            android:id="@+id/savePosition"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="save position"
-            />
+            <Button
+                android:id="@+id/savePosition"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/save_position"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/displayModeGroup"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone"
+            >
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/your_saved_location" />
+
+            <TextView
+                android:id="@+id/savedCityName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="savedCityName" />
+
+            <TextView
+                android:id="@+id/savedTemperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="savedTemperature" />
+
+            <TextView
+                android:id="@+id/savedDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="savedDate" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

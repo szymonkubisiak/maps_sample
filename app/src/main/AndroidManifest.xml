@@ -44,7 +44,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".locationslist.SavedLocationsListActivity" />
+        <activity
+            android:name=".locationslist.SavedLocationsListActivity"
+            android:label="@string/title_activity_locations"
+            />
+
+
     </application>
 
 </manifest>

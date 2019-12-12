@@ -9,6 +9,7 @@
         <variable
             name="vm"
             type="pl.kubisiak.gmaps.locationslist.SavedPositionViewModel" />
+        <import type="pl.kubisiak.gmaps.Utils"/>
     </data>
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,7 +30,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="18sp"
-            android:text="@{vm.position.date.toString()}"
+            android:text="@{Utils.formatDate(vm.position.date)}"
             tools:text="Lorem ipsum"
             />
     </LinearLayout>
