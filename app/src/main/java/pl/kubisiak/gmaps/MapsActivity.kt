@@ -96,6 +96,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 cityName.text = getString(R.string.main_screen_city, it.name)
                 temperature.text = getString(R.string.main_screen_temp, it.main?.temp)
                 weather.text = getString(R.string.main_screen_weather, it.weather?.firstOrNull()?.description)
+            }, Consumer {
+                Log.e("WEATH", "failed to get weather")
             })
     }
 
